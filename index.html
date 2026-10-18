@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Opening Claude Code…</title>
+<style>
+  body { margin: 0; font-family: Calibri, "Segoe UI", Arial, sans-serif; background: #ffffff; color: #1B2A3A;
+         display: flex; min-height: 100vh; align-items: center; justify-content: center; }
+  main { max-width: 520px; padding: 32px 24px; text-align: center; }
+  h1 { font-size: 26px; margin: 0 0 12px; }
+  p { color: #6B7785; font-size: 16px; line-height: 1.5; }
+  a.btn { display: inline-block; margin-top: 12px; padding: 14px 24px; background: #1287C3; color: #fff;
+          text-decoration: none; border-radius: 8px; font-size: 17px; }
+  .err { color: #B3261E; }
+</style>
+</head>
+<body>
+<main>
+  <h1 id="h">Opening your Claude Code session…</h1>
+  <p id="msg">Your browser may ask to open Visual Studio Code. Tick “always allow” so next time it’s one click.</p>
+  <a class="btn" id="go" href="#" hidden>Open in VS Code</a>
+</main>
+<script>
+  // A bounce page: Gmail strips app links (vscode://), so the email links here and this
+  // page hands off to Claude Code in VS Code. It ONLY ever builds a
+  // vscode://anthropic.claude-code/open link (never an arbitrary redirect), accepts only a
+  // session ID in UUID form and a short prompt, and stores nothing.
+  (function () {
+    var q = new URLSearchParams(location.search);
+    var session = (q.get("session") || "").trim();
+    var prompt = (q.get("prompt") || "").slice(0, 2000);
+    var parts = [];
+    if (session) {
+      if (!/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(session)) {
+        document.getElementById("h").textContent = "That link doesn’t look right.";
+        document.getElementById("msg").className = "err";
+        document.getElementById("msg").textContent = "The session ID in it isn’t valid, so nothing was opened.";
+        return;
+      }
+      parts.push("session=" + encodeURIComponent(session));
+    }
+    if (prompt) parts.push("prompt=" + encodeURIComponent(prompt));
+    var target = "vscode://anthropic.claude-code/open" + (parts.length ? "?" + parts.join("&") : "");
+    var btn = document.getElementById("go");
+    btn.href = target;
+    btn.hidden = false;
+    location.href = target;
+  })();
+</script>
+</body>
+</html>
